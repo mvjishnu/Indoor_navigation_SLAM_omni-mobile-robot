@@ -1,0 +1,50 @@
+services:
+  ros2:
+    hostname: indoor_slam
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        USERNAME: ${CONTAINER_USER:-omni_robot}
+        UID: ${HOST_UID:-1000}
+        GID: ${HOST_GID:-1000}
+
+    image: ros2-jazzy-omni-slam:latest
+    container_name: ros2_jazzy_omni_slam
+
+    stdin_open: true
+    tty: true
+
+    network_mode: host
+    ipc: host
+    privileged: false
+
+    environment:
+      DISPLAY: ${DISPLAY:-:0}
+      QT_X11_NO_MITSHM: "1"
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      GZ_VERSION: harmonic
+      LIBGL_ALWAYS_SOFTWARE: ${LIBGL_ALWAYS_SOFTWARE:-0}
+
+    volumes:
+      - ../src:/home/${CONTAINER_USER:-omni_robot}/ros2_ws/src
+
+      # X11
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY:-${HOME}/.Xauthority}:/home/${CONTAINER_USER:-omni_robot}/.Xauthority:rw
+
+      # Live host device tree
+      - /dev:/dev
+
+      # udev information
+      - /run/udev:/run/udev:ro
+
+    group_add:
+      - "${DIALOUT_GID:-20}"
+      - "${VIDEO_GID:-44}"
+
+    working_dir: /home/${CONTAINER_USER:-omni_robot}/ros2_ws
+
+    command: bash
+    restart: unless-stopped
