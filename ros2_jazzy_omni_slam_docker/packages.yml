@@ -1,0 +1,74 @@
+# ROS 2 Jazzy + Gazebo Harmonic
+# Required for: omni/mecanum base, LiDAR SLAM, Nav2, TF, sensors,
+# ros2_control, Gazebo simulation, RViz2, MCU/SBC serial integration.
+
+# ROS base + development
+ros-jazzy-ros-base
+ros-dev-tools
+python3-colcon-common-extensions
+python3-rosdep
+python3-vcstool
+
+# Core robot description / TF
+ros-jazzy-robot-state-publisher
+ros-jazzy-joint-state-publisher
+ros-jazzy-joint-state-publisher-gui
+ros-jazzy-xacro
+ros-jazzy-tf2-tools
+ros-jazzy-tf2-ros
+ros-jazzy-tf-transformations
+
+# Sensors / messages / image transport
+ros-jazzy-sensor-msgs
+ros-jazzy-geometry-msgs
+ros-jazzy-nav-msgs
+ros-jazzy-std-msgs
+ros-jazzy-visualization-msgs
+ros-jazzy-diagnostic-updater
+ros-jazzy-laser-filters
+ros-jazzy-image-transport
+ros-jazzy-image-transport-plugins
+ros-jazzy-cv-bridge
+ros-jazzy-camera-info-manager
+
+# Navigation + SLAM
+ros-jazzy-nav2-bringup
+ros-jazzy-navigation2
+ros-jazzy-nav2-msgs
+ros-jazzy-nav2-map-server
+ros-jazzy-nav2-lifecycle-manager
+ros-jazzy-slam-toolbox
+
+# Control
+ros-jazzy-ros2-control
+ros-jazzy-ros2-controllers
+ros-jazzy-controller-manager
+ros-jazzy-joint-state-broadcaster
+ros-jazzy-diff-drive-controller
+ros-jazzy-joint-trajectory-controller
+ros-jazzy-hardware-interface
+
+# Gazebo Harmonic / ROS integration
+ros-jazzy-ros-gz
+ros-jazzy-ros-gz-bridge
+ros-jazzy-ros-gz-image
+ros-jazzy-ros-gz-sim
+ros-jazzy-gz-ros2-control
+
+# Visualization
+ros-jazzy-rviz2
+
+# Middleware for reliable SBC <-> laptop / MCU ROS 2 communication
+ros-jazzy-rmw-cyclonedds-cpp
+
+# Build/runtime utilities
+build-essential
+cmake
+git
+wget
+curl
+nano
+vim
+python3-pip
+python3-opencv
+python3-serial
