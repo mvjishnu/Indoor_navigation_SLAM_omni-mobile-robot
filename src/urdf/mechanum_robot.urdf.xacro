@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<robot name="mecanum_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find your_robot_package)/urdf/mecanum_wheel.xacro" />
+
+  <!-- Base Link -->
+  <link name="base_footprint"/>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0.04" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="2.0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.02"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.30 0.20 0.05"/>
+      </geometry>
+      <material name="chassis_color">
+        <color rgba="0.2 0.2 0.2 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.30 0.20 0.05"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Instantiate 4 Wheels -->
+  <xacro:mecanum_wheel prefix="front_left"  parent_link="base_link" x_reflect="1"  y_reflect="1" />
+  <xacro:mecanum_wheel prefix="front_right" parent_link="base_link" x_reflect="1"  y_reflect="-1" />
+  <xacro:mecanum_wheel prefix="rear_left"   parent_link="base_link" x_reflect="-1" y_reflect="1" />
+  <xacro:mecanum_wheel prefix="rear_right"  parent_link="base_link" x_reflect="-1" y_reflect="-1" />
+
+  <!-- Gazebo Planar Move Plugin for Mecanum Drive Simulation -->
+  <gazebo>
+    <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
+      <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <odometryRate>20.0</odometryRate>
+      <robotBaseFrame>base_footprint</robotBaseFrame>
+    </plugin>
+  </gazebo>
+
+</robot>
