@@ -1,6 +1,8 @@
 services:
   ros2:
     hostname: indoor_slam
+    extra_hosts:
+      - "indoor_slam:127.0.0.1"
     build:
       context: .
       dockerfile: Dockerfile
