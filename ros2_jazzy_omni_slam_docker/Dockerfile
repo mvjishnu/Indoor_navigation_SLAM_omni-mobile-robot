@@ -95,7 +95,9 @@ RUN set -eux; \
             --shell /bin/bash \
             "${USERNAME}"; \
     fi; \
-    usermod -aG dialout,video "${USERNAME}"
+    usermod -aG dialout,video,sudo "${USERNAME}"; \
+    echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${USERNAME}"; \
+    chmod 0440 "/etc/sudoers.d/${USERNAME}"
 
 
 # ============================================================
