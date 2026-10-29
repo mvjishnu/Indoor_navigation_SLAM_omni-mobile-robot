@@ -39,6 +39,7 @@ ros-jazzy-nav2-msgs
 ros-jazzy-nav2-map-server
 ros-jazzy-nav2-lifecycle-manager
 ros-jazzy-slam-toolbox
+ros-jazzy-robot-localization
 
 # Control
 ros-jazzy-ros2-control
@@ -48,6 +49,9 @@ ros-jazzy-joint-state-broadcaster
 ros-jazzy-diff-drive-controller
 ros-jazzy-joint-trajectory-controller
 ros-jazzy-hardware-interface
+ros-jazzy-teleop-twist-keyboard
+ros-jazzy-mecanum-drive-controller
+ros-jazzy-imu-sensor-broadcaster
 
 # Gazebo Harmonic / ROS integration
 ros-jazzy-ros-gz
@@ -55,9 +59,11 @@ ros-jazzy-ros-gz-bridge
 ros-jazzy-ros-gz-image
 ros-jazzy-ros-gz-sim
 ros-jazzy-gz-ros2-control
+ros-jazzy-gz-ros2-control-demos
 
 # Visualization
 ros-jazzy-rviz2
+xterm
 
 # Middleware for reliable SBC <-> laptop / MCU ROS 2 communication
 ros-jazzy-rmw-cyclonedds-cpp

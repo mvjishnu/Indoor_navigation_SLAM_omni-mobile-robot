@@ -31,6 +31,9 @@ services:
 
     volumes:
       - ../src:/home/${CONTAINER_USER:-omni_robot}/ros2_ws/src
+      
+      # Persistent Bash history across container recreation
+      - ./docker-data/bash_history:/home/${CONTAINER_USER:-omni_robot}/.bash_history
 
       # X11
       - /tmp/.X11-unix:/tmp/.X11-unix:rw

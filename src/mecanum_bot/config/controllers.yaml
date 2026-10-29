@@ -1,0 +1,33 @@
+controller_manager:
+  ros__parameters:
+    use_sim_time: true
+    update_rate: 100
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    mecanum_drive_controller:
+      type: mecanum_drive_controller/MecanumDriveController
+
+mecanum_drive_controller:
+  ros__parameters:
+    use_sim_time: true
+
+    front_left_wheel_command_joint_name: "front_left_revolute"
+    front_right_wheel_command_joint_name: "front_right_revolute"
+    rear_right_wheel_command_joint_name: "back_right_revolute"
+    rear_left_wheel_command_joint_name: "back_left_revolute"
+
+    kinematics:
+      base_frame_offset: {x: 0.0, y: 0.0, theta: 0.0}
+      wheels_radius: 0.042
+      sum_of_robot_center_projection_on_X_Y_axis: 0.20
+
+    base_frame_id: "base_link"
+    odom_frame_id: "odom"
+    enable_odom_tf: true
+
+    reference_timeout: 0.5
+
+    pose_covariance_diagonal: [0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+    twist_covariance_diagonal: [0.01, 0.01, 0.01, 0.01, 0.01, 0.01]

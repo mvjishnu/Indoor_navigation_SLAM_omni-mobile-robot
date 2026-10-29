@@ -124,6 +124,18 @@ export GZ_VERSION=harmonic
 # ROS 2 middleware
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
+# Persistent Bash history
+export HISTFILE="$HOME/.bash_history"
+export HISTSIZE=100000
+export HISTFILESIZE=200000
+shopt -s histappend
+PROMPT_COMMAND="history -a; history -n${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+
+# ROS 2 workspace shortcuts
+alias cb='cd ~/ros2_ws && colcon build --symlink-install && source ~/ros2_ws/install/setup.bash'
+alias cbr='cd ~/ros2_ws && rm -rf build install log'
+alias sl='ros2 launch mecanum_bot bot.launch.py'
+
 
 # ============================================================
 # Colored file listing
