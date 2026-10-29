@@ -1,0 +1,159 @@
+clear
+ls
+cb
+sudo nano ~/.bashrc 
+ros2 node list
+ros2 node info /teleop_twist_keyboard 
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.1, y: 0.0, z: 0.0}, angular: {z: 0.0}}}"
+sl
+source /opt/ros/jazzy/setup.bash
+source ~/ros2_ws/install/setup.bash
+ros2 topic list | grep -E 'cmd_vel|reference|joint_states'
+ros2 topic info /mecanum_drive_controller/reference
+ros2 topic info /cmd_vel
+sudo nano ~/.bashrc 
+sl
+clear
+ros2 run teleop_twist_keyboard teleop_twist_keyboard   --ros-args   -r /cmd_vel:=/mecanum_drive_controller/reference   -p stamped:=true
+sl
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.1, y: 0.0, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.1, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.1, y: 0.0, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.1, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.2, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.4, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.075, z: 0.0}, angular: {z: 0.0}}}"
+sl
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.15, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.1, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: -0.1, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: -0.075, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.05, y: -0.05, z: 0.0}, angular: {z: 0.0}}}"
+clear
+cb
+sl
+find src/mecanum_bot -type f -name '*.stl'
+cb
+sl
+cb
+sl
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.05, y: -0.05, z: 0.0}, angular: {z: 0.0}}}"
+sl
+cbr
+ls
+cb
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.05, y: 0.0, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.75 y: 0.0, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.075, y: 0.0, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.01, y: 0.0, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.1, y: 0.0, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.2, y: 0.0, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.4, y: 0.0, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 1.0, y: 0.0, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.75, y: 0.0, z: 0.0}, angular: {z: 0.0}}}"
+sl
+pkill -f gz
+cbr
+cb
+sl
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: -0.95, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: -0.65, z: 0.0}, angular: {z: 0.0}}}"
+cd src/
+ros2 run tf2_tools view_frames
+cbr
+cb
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: -0.75, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: -075, z: 0.0}, angular: {z: 0.0}}}"
+sl
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: -00.75, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.75, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: -0.75, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: : 0.75, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: -0.75, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: -075, z: 0.0}, angular: {z: 0.0}}}"
+sl
+clear
+sl
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.05, y: 0.075, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.075, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.071, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.071,5, z: 0.0}, angular: {z: 0.0}}}"
+clear
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.05, y: 0.075, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.05,, y: 0.075, z: 0.0}, angular: {z: 0.0}}}"
+clear
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.075, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.071, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.1, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.2, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.4, z: 0.0}, angular: {z: 0.0}}}"
+clear
+clear
+ros2 run tf2_tools view_frames 
+clear
+sl
+ls
+cb
+sl
+CLEAR
+sl
+clear
+ls
+clea
+clear
+cb
+sl
+cb
+sl
+clear
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.4, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: -0.4, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.2, z: 0.0}, angular: {z: 0.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.0}, angular: {z: 0.05}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.0}, angular: {z: 0.1}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.0}, angular: {z: 0.4}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.0}, angular: {z: 1.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.0}, angular: {z: 8.0}}}"
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 0.0}, angular: {z: 10.0}}}"
+sl
+ros2 topic pub --rate 10 /mecanum_drive_controller/reference geometry_msgs/msg/TwistStamped "{header: {frame_id: 'base_link'}, twist: {linear: {x: 0.0, y: 9.0}, angular: {z: 0.0}}}"
+sl
+cb
+sl
+cbb
+cb
+sl
+cb
+sl
+cb
+sl
+cb
+sl
+cb
+sl
+cbr
+cb
+sl
+cbr
+cb
+sl
+cb
+sl
+cbr
+cb
+sl
+sudo apt update && sudo apt full-upgrade -y
+sl
+cbr
+cb
+sl
+cb
+pkill -f gz
+cb
+sl
+cbr
+cb
+sl
+ls
+cb
+sl
