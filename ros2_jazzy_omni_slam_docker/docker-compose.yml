@@ -20,12 +20,21 @@ services:
     network_mode: host
     ipc: host
     privileged: false
-
     environment:
-      DISPLAY: ${DISPLAY:-:0}
+      DISPLAY: ${DISPLAY:-}
+      WAYLAND_DISPLAY: ${WAYLAND_DISPLAY_CONTAINER:-wayland-0}
+      QT_QPA_PLATFORM: "wayland;xcb"
+      XDG_RUNTIME_DIR: /run/user/${HOST_UID:-1000}
+      XAUTHORITY: /home/${CONTAINER_USER:-omni_robot}/.Xauthority
       QT_X11_NO_MITSHM: "1"
+      # Keep Gazebo Transport discovery local; host networking carries ROS 2.
+      GZ_IP: 127.0.0.1
+      IGN_IP: 127.0.0.1
+      GZ_PARTITION: indoor_slam
+      IGN_PARTITION: indoor_slam
       ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      CYCLONEDDS_URI: file:///etc/ros/cyclonedds.xml
       GZ_VERSION: harmonic
       LIBGL_ALWAYS_SOFTWARE: ${LIBGL_ALWAYS_SOFTWARE:-0}
 
@@ -34,16 +43,27 @@ services:
       
       # Persistent Bash history across container recreation
       - ./docker-data/bash_history:/home/${CONTAINER_USER:-omni_robot}/.bash_history
+      - ../.ros2_ws/cyclonedds.xml:/etc/ros/cyclonedds.xml:ro
 
-      # X11
+      # Keep colcon outputs on the host across container recreation.
+      - ../.ros2_ws/build:/home/${CONTAINER_USER:-omni_robot}/ros2_ws/build
+      - ../.ros2_ws/install:/home/${CONTAINER_USER:-omni_robot}/ros2_ws/install
+      - ../.ros2_ws/log:/home/${CONTAINER_USER:-omni_robot}/ros2_ws/log
+
+      # X11/XWayland, optional X authentication, and optional native Wayland.
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - ${XAUTHORITY:-${HOME}/.Xauthority}:/home/${CONTAINER_USER:-omni_robot}/.Xauthority:rw
+      - ${XAUTHORITY_PATH:-/dev/null}:/home/${CONTAINER_USER:-omni_robot}/.Xauthority:ro
+      - ${WAYLAND_SOCKET_PATH:-/dev/null}:/run/user/${HOST_UID:-1000}/${WAYLAND_DISPLAY_CONTAINER:-wayland-0}:rw
 
       # Live host device tree
       - /dev:/dev
 
       # udev information
       - /run/udev:/run/udev:ro
+
+    # Qt requires XDG_RUNTIME_DIR to be owned by the container user with mode 0700.
+    tmpfs:
+      - /run/user/${HOST_UID:-1000}:uid=${HOST_UID:-1000},gid=${HOST_GID:-1000},mode=0700
 
     group_add:
       - "${DIALOUT_GID:-20}"

@@ -63,6 +63,7 @@ ros-jazzy-gz-ros2-control-demos
 
 # Visualization
 ros-jazzy-rviz2
+qt6-wayland
 xterm
 
 # Middleware for reliable SBC <-> laptop / MCU ROS 2 communication
