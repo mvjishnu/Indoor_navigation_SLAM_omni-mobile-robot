@@ -1,6 +1,7 @@
-from setuptools import find_packages, setup
 from glob import glob
 import os
+
+from setuptools import find_packages, setup
 
 package_name = 'mecanum_bot'
 
@@ -14,11 +15,11 @@ setup(
         ('share/' + package_name, ['package.xml']),
         (
             os.path.join('share', package_name, 'launch'),
-                glob('launch/*.launch.py'),
+            glob('launch/*.launch.py'),
         ),
         (
             os.path.join('share', package_name, 'urdf'),
-                glob('urdf/*.urdf'),
+            glob('urdf/*.urdf'),
         ),
         (
             os.path.join('share', package_name, 'meshes'),
@@ -26,15 +27,15 @@ setup(
         ),
         (
             os.path.join('share', package_name, 'worlds'),
-                glob('worlds/*'),
+            glob('worlds/*'),
         ),
         (
             os.path.join('share', package_name, 'config'),
-                glob('config/*'),
+            glob('config/*'),
         ),
         (
             os.path.join('share', package_name, 'params'),
-                glob('params/*'),
+            glob('params/*'),
         ),
     ],
     install_requires=['setuptools'],
@@ -50,6 +51,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'cmd_vel_stamper = mecanum_bot.cmd_vel_stamper:main',
         ],
     },
 )

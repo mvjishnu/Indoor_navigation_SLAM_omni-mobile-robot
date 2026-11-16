@@ -11,26 +11,26 @@ from launch.actions import (
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
+from mecanum_bot.robot_description import load_robot_description
+
 
 def generate_launch_description():
-    pkg_share = get_package_share_directory("mecanum_bot")
-    gz_share = get_package_share_directory("ros_gz_sim")
+    pkg_share = get_package_share_directory('mecanum_bot')
+    gz_share = get_package_share_directory('ros_gz_sim')
 
-    urdf_file = os.path.join(
-        pkg_share, "urdf", "omni_mobile_bot.urdf"
-    )
     world_file = os.path.join(
-        pkg_share, "worlds", "empty.sdf"
+        pkg_share, 'worlds', 'empty.sdf'
     )
     gazebo_launch_file = os.path.join(
-        gz_share, "launch", "gz_sim.launch.py"
+        gz_share, 'launch', 'gz_sim.launch.py'
     )
 
-    with open(urdf_file, "r", encoding="utf-8") as urdf:
-        robot_description = urdf.read()
+    # Patch the controller parameter path at runtime so this launch does not
+    # depend on the source-tree path embedded in the original URDF.
+    robot_description = load_robot_description(sim=True)
 
     gazebo_resources = AppendEnvironmentVariable(
-        name="GZ_SIM_RESOURCE_PATH",
+        name='GZ_SIM_RESOURCE_PATH',
         value=os.path.dirname(pkg_share),
         separator=os.pathsep,
     )
@@ -38,87 +38,85 @@ def generate_launch_description():
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(gazebo_launch_file),
         launch_arguments={
-            "gz_args": f"-r -v 4 {world_file}"
+            'gz_args': f'-r -v 4 {world_file}'
         }.items(),
     )
 
     clock_bridge = Node(
-        package="ros_gz_bridge",
-        executable="parameter_bridge",
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
         arguments=[
-            "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
+            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
         ],
-        output="screen",
+        output='screen',
     )
 
     robot_state_publisher = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        name="robot_state_publisher",
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
         parameters=[{
-            "robot_description": robot_description,
-            "use_sim_time": True,
+            'robot_description': robot_description,
+            'use_sim_time': True,
         }],
-        output="screen",
+        output='screen',
     )
 
     spawn_robot = Node(
-        package="ros_gz_sim",
-        executable="create",
+        package='ros_gz_sim',
+        executable='create',
         arguments=[
-            "-topic", "robot_description",
-            "-name", "omni_mobile_bot",
+            '-topic', 'robot_description',
+            '-name', 'omni_mobile_bot',
         ],
-        output="screen",
+        output='screen',
     )
 
     joint_state_broadcaster_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
+        package='controller_manager',
+        executable='spawner',
         arguments=[
-            "joint_state_broadcaster",
-            "--controller-manager",
-            "/controller_manager",
-            "--controller-manager-timeout",
-            "60",
+            'joint_state_broadcaster',
+            '--controller-manager',
+            '/controller_manager',
+            '--controller-manager-timeout',
+            '60',
         ],
-        output="screen",
+        output='screen',
     )
 
     mecanum_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
+        package='controller_manager',
+        executable='spawner',
         arguments=[
-            "mecanum_drive_controller",
-            "--controller-manager",
-            "/controller_manager",
-            "--controller-manager-timeout",
-            "60",
+            'mecanum_drive_controller',
+            '--controller-manager',
+            '/controller_manager',
+            '--controller-manager-timeout',
+            '60',
         ],
-        output="screen",
+        output='screen',
     )
 
-    
     teleop_keyboard = Node(
-        package="teleop_twist_keyboard",
-        executable="teleop_twist_keyboard",
-        name="teleop_twist_keyboard",
+        package='teleop_twist_keyboard',
+        executable='teleop_twist_keyboard',
+        name='teleop_twist_keyboard',
         prefix=(
-            "xterm -fa 'Monospace' -fs 10 "
-            "-geometry 65x20+50+50 -e"
+            'xterm -fa "Monospace" -fs 10 '
+            '-geometry 65x20+50+50 -e'
         ),
         remappings=[
             (
-                "/cmd_vel",
-                "/mecanum_drive_controller/reference",
+                '/cmd_vel',
+                '/mecanum_drive_controller/reference',
             ),
         ],
         parameters=[
-            {"stamped": True},
+            {'stamped': True},
         ],
-        output="screen",
+        output='screen',
     )
-
 
     return LaunchDescription([
         gazebo_resources,

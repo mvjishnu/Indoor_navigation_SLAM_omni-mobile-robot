@@ -182,3 +182,15 @@ sl
 cb
 sl
 celar
+cbr
+ls
+colcon build
+clear
+ros2 launch mecanum_bot navigation.launch.py
+nano ~/.bashrc
+ros2 launch mecanum_bot navigation.launch.py slam:=false
+source ~/.bashrc 
+ros2 launch mecanum_bot navigation.launch.py slam:=false
+cb
+ros2 launch mecanum_bot navigation.launch.py slam:=false
+cb
