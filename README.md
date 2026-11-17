@@ -118,7 +118,7 @@ Three windows open:
 | Window | What it is |
 |---|---|
 | **Gazebo** | The 20 × 15 m warehouse simulation, with the robot spawned on the main walkway |
-| **RViz** | The map being built, the robot, lidar scan, costmaps and the Navigation 2 panel |
+| **RViz** | The map being built, the robot, lidar scan, costmaps, the Navigation 2 panel and the **Robot Camera** view (top-left; drag to resize or undock) |
 | **xterm (teleop)** | Keyboard driving |
 
 Build the map by driving the robot around. You can drive it two ways.
@@ -252,4 +252,5 @@ ros2 action send_goal /follow_waypoints nav2_msgs/action/FollowWaypoints "{poses
   - moderate heading critics rotate it while it translates;
   - the final heading comes from the 2D Goal Pose arrow.
 - **Limits:** 0.34 m/s in any direction, 1.08 rad/s rotation.
+- **Camera:** a forward-facing 640 x 360, 15 Hz view camera on `camera_link`, published as `/camera/image_raw` and `/camera/camera_info`. It's for viewing only; navigation doesn't use it.
 - **Inflation:** 0.45 m radius with a steep fall-off, tuned for 0.9–1.2 m passages.

@@ -8,8 +8,10 @@ appended to it at launch time:
   wheels with x pointing to the front of the robot (the camera side).  The
   mecanum controller and the EKF both assume that convention, whereas the CAD
   ``base_link`` is on a wheel corner with +y pointing forward.
-* (simulation only) the Gazebo lidar and IMU sensors, modelled on the
+* (simulation only) the Gazebo lidar, IMU and camera sensors, modelled on the
   RPLiDAR C1 and the MPU9250 so that the simulation resembles the real parts.
+  The camera is for viewing only (``/camera/image_raw``); navigation does not
+  use it.
 """
 
 import math
@@ -24,6 +26,15 @@ LIDAR_SAMPLES = 500
 LIDAR_RATE_HZ = 10
 LIDAR_MIN_RANGE = 0.05
 LIDAR_MAX_RANGE = 12.0
+
+# Forward-looking view camera on camera_link. camera_link is rotated -90 deg
+# about x in the URDF; this sensor pose turns the optical axis (sensor +x) to
+# the robot's forward direction (base_link +y) with the image upright.
+CAMERA_RPY = '-3.141593 -1.570796 -1.570796'
+CAMERA_WIDTH = 640
+CAMERA_HEIGHT = 360
+CAMERA_RATE_HZ = 15
+CAMERA_HFOV = 1.2   # rad (~69 deg)
 
 NAV_FRAMES_XML = """
   <!-- ===== navigation frames (added by mecanum_bot.robot_description) ===== -->
@@ -88,6 +99,30 @@ def _sensor_xml():
           <stddev>0.01</stddev>
         </noise>
       </lidar>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="camera_link">
+    <sensor name="view_camera" type="camera">
+      <pose>0 0 0 {CAMERA_RPY}</pose>
+      <topic>camera/image_raw</topic>
+      <gz_frame_id>camera_link</gz_frame_id>
+      <update_rate>{CAMERA_RATE_HZ}</update_rate>
+      <always_on>true</always_on>
+      <visualize>false</visualize>
+      <camera>
+        <camera_info_topic>camera/camera_info</camera_info_topic>
+        <horizontal_fov>{CAMERA_HFOV}</horizontal_fov>
+        <image>
+          <width>{CAMERA_WIDTH}</width>
+          <height>{CAMERA_HEIGHT}</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.05</near>
+          <far>30.0</far>
+        </clip>
+      </camera>
     </sensor>
   </gazebo>
 

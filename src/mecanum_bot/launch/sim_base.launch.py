@@ -75,6 +75,9 @@ def generate_launch_description():
             '/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
             # Passive roller joints (wheel joints come from joint_state_broadcaster).
             '/roller_joint_states@sensor_msgs/msg/JointState[gz.msgs.Model',
+            # View-only camera (not used by navigation).
+            '/camera/image_raw@sensor_msgs/msg/Image[gz.msgs.Image',
+            '/camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
         ],
         remappings=[('/imu', '/imu/data'),
                     ('/roller_joint_states', '/joint_states')],

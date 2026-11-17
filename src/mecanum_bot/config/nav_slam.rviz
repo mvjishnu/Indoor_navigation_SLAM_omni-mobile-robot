@@ -161,6 +161,16 @@ Visualization Manager:
         Head Radius: 0.05
       Covariance:
         Value: false
+    - Class: rviz_default_plugins/Image
+      Name: Robot Camera
+      Enabled: true
+      Topic:
+        Value: /camera/image_raw
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+      Normalize Range: true
     - Class: rviz_default_plugins/PoseArray
       Name: AMCL Particles
       Enabled: true
