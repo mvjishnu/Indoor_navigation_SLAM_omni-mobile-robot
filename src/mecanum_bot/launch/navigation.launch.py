@@ -1,8 +1,8 @@
 """
 Simulation and EKF with Nav2, using live SLAM or AMCL localization.
 
-Pass slam:=true to map while navigating. Pass slam:=false and map:=PATH to
-localize against a saved map.
+slam:=true (default) maps while navigating. slam:=false localizes with AMCL on
+a saved map: the packaged maps/warehouse.yaml by default, or map:=PATH.
 """
 
 import os
@@ -32,11 +32,12 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'slam', default_value='true',
             description='true: build the map; false: localize on the map argument'),
-        DeclareLaunchArgument('map', default_value='',
-                              description='map yaml (needed when slam:=false)'),
+        DeclareLaunchArgument(
+            'map', default_value=os.path.join(pkg_share, 'maps', 'warehouse.yaml'),
+            description='saved map yaml used when slam:=false'),
         DeclareLaunchArgument('world', default_value=os.path.join(
-            pkg_share, 'worlds', 'indoor_house.sdf')),
-        DeclareLaunchArgument('world_name', default_value='indoor_house'),
+            pkg_share, 'worlds', 'warehouse.sdf')),
+        DeclareLaunchArgument('world_name', default_value='warehouse'),
         DeclareLaunchArgument('headless', default_value='false'),
         DeclareLaunchArgument('rviz', default_value='true'),
         DeclareLaunchArgument('teleop', default_value='false'),

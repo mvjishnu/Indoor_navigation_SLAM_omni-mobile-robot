@@ -38,10 +38,10 @@ def generate_launch_description():
     declare_args = [
         DeclareLaunchArgument(
             'world',
-            default_value=os.path.join(pkg_share, 'worlds', 'indoor_house.sdf'),
+            default_value=os.path.join(pkg_share, 'worlds', 'warehouse.sdf'),
             description='SDF world file'),
         DeclareLaunchArgument(
-            'world_name', default_value='indoor_house',
+            'world_name', default_value='warehouse',
             description='<world name="..."> inside the SDF file'),
         DeclareLaunchArgument(
             'headless', default_value='false',

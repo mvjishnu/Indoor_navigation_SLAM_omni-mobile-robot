@@ -11,6 +11,8 @@ Panels:
     Name: Views
     Expanded:
       - /Current View1
+  - Class: nav2_rviz_plugins/Navigation 2
+    Name: Navigation 2
 Visualization Manager:
   Class: ""
   Displays:
@@ -117,7 +119,7 @@ Visualization Manager:
       Line Style: Lines
     - Class: rviz_default_plugins/Odometry
       Name: Filtered Odometry (EKF)
-      Enabled: true
+      Enabled: false
       Topic:
         Value: /odometry/filtered
         Depth: 5
@@ -141,7 +143,7 @@ Visualization Manager:
       Name: Wheel Odometry (raw)
       Enabled: false
       Topic:
-        Value: /wheel/odometry
+        Value: /mecanum_drive_controller/odometry
         Depth: 5
         Durability Policy: Volatile
         History Policy: Keep Last
@@ -197,6 +199,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
+    - Class: nav2_rviz_plugins/GoalTool
     - Class: rviz_default_plugins/PublishPoint
       Single click: true
       Topic:

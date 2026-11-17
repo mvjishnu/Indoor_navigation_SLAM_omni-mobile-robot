@@ -21,8 +21,8 @@ def generate_launch_description():
     declare_args = [
         DeclareLaunchArgument('use_sim_time', default_value='true'),
         DeclareLaunchArgument('world', default_value=os.path.join(
-            pkg_share, 'worlds', 'indoor_house.sdf')),
-        DeclareLaunchArgument('world_name', default_value='indoor_house'),
+            pkg_share, 'worlds', 'warehouse.sdf')),
+        DeclareLaunchArgument('world_name', default_value='warehouse'),
         DeclareLaunchArgument('headless', default_value='false'),
         DeclareLaunchArgument('rviz', default_value='true'),
         DeclareLaunchArgument('teleop', default_value='true'),

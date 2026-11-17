@@ -34,15 +34,15 @@ setup(
             glob('config/*'),
         ),
         (
-            os.path.join('share', package_name, 'params'),
-            glob('params/*'),
+            os.path.join('share', package_name, 'maps'),
+            glob('maps/*'),
         ),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='omni_robot',
     maintainer_email='omni_robot@todo.todo',
-    description='TODO: Package description',
+    description='Mecanum robot simulation, SLAM and Nav2 navigation',
     license='TODO: License declaration',
     extras_require={
         'test': [
