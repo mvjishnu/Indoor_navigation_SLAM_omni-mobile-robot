@@ -38,6 +38,10 @@ services:
       GZ_VERSION: harmonic
       ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      # DDS config written by the entrypoint for this host's network. Set here
+      # (not only in .bashrc) so non-interactive processes use it too:
+      # `docker compose exec ros2 ros2 launch ...`, scripts, services.
+      CYCLONEDDS_URI: file:///tmp/cyclonedds.xml
       # Optional: force the DDS interface instead of auto-detecting it.
       ROS_NETWORK_INTERFACE: ${ROS_NETWORK_INTERFACE:-}
 
