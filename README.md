@@ -254,3 +254,4 @@ ros2 action send_goal /follow_waypoints nav2_msgs/action/FollowWaypoints "{poses
 - **Limits:** 0.34 m/s in any direction, 1.08 rad/s rotation.
 - **Camera:** a forward-facing 640 x 360, 15 Hz view camera on `camera_link`, published as `/camera/image_raw` and `/camera/camera_info`. It's for viewing only; navigation doesn't use it.
 - **Inflation:** 0.45 m radius with a steep fall-off, tuned for 0.9–1.2 m passages.
+
