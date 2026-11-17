@@ -1,101 +1,71 @@
-# ROS 2 Jazzy + Gazebo Harmonic — Indoor Omni SLAM
+# ROS 2 Jazzy + Gazebo Harmonic: Indoor Omni SLAM container
 
-Container stack for the indoor navigation / SLAM omni (mecanum) mobile robot.
-
-## Files
-
-- `Dockerfile` — Ubuntu 24.04 ARM64/AMD64 image with ROS 2 Jazzy + Gazebo Harmonic.
-- `docker-compose.yml` — host networking, X11/XWayland or native Wayland, optional GPU acceleration, serial/video devices, non-root user.
-- `packages.yml` — required package list.
-- `build.sh` — builds the image using your host UID/GID.
-- `run.sh` — detects the desktop socket, route interface, and available GPU, then starts the container and opens a shell.
-- `stop.sh` — stops/removes the container.
-- `workspace/` — your ROS 2 workspace.
-
-## First run
+## Quick start (any Linux host)
 
 ```bash
-chmod +x build.sh run.sh stop.sh
-./build.sh
-./run.sh
+cd ros2_jazzy_omni_slam_docker
+./run.sh            # first run builds the image (~10-20 min), then opens a shell
 ```
 
 Inside the container:
 
 ```bash
-ros2 --version
-gz sim --versions
-ros2 pkg list | grep -E 'nav2|slam_toolbox|ros_gz'
+cb                  # = cd ~/ros2_ws && colcon build --symlink-install && source install/setup.bash
+ros2 launch mecanum_bot navigation.launch.py teleop:=true
 ```
 
-## Important Raspberry Pi note
+Open more shells into the same container by running `./run.sh` again. Use `./stop.sh` to stop the container.
 
-Use **64-bit Raspberry Pi OS**. ROS 2 Jazzy has Tier-1 ARM64 binaries for Ubuntu Noble, and ROS 2 documents Raspberry Pi OS 64-bit + Docker as a supported route.
+| Command | What it does |
+|---|---|
+| `./run.sh` | Detects the host, builds the image if needed, starts the container, opens a shell |
+| `./run.sh --build` | Rebuilds the image first. Run this after editing `Dockerfile` or `packages.yml` |
+| `./run.sh --no-gpu` | Starts without requesting the NVIDIA GPU |
+| `./run.sh ros2 topic list` | Runs one command inside the container |
+| `./build.sh` | Builds the image only |
+| `./stop.sh` | Stops and removes the container. The image, workspace build and history are kept |
 
-Gazebo Harmonic and RViz2 are included because this same image can be used for simulation/development, but a Raspberry Pi 4 with 4 GB RAM is not an ideal Gazebo/RViz workstation. For the physical robot, run the ROS nodes needed by the robot and use a laptop/desktop for heavy Gazebo/RViz visualization when necessary.
+## Host requirements
 
-## Serial MCU
+- Linux (x86_64 or arm64 such as Raspberry Pi OS 64-bit or Ubuntu), with Docker Engine and Docker Compose. Your user must be in the `docker` group.
+- **buildx is optional.** The Dockerfile uses only classic-builder syntax. If buildx is missing, `run.sh` falls back to the classic builder.
+- GUI: X11, XWayland (GNOME, KDE, Hyprland, Sway), or native Wayland. With no display, use `headless:=true rviz:=false teleop:=false`.
+- NVIDIA GPU (optional): needs `nvidia-container-toolkit` registered with Docker (`sudo nvidia-ctk runtime configure --runtime=docker && sudo systemctl restart docker`). If it is not set up, Mesa/DRI or software rendering is used.
 
-The compose file passes through:
+Docker Desktop on macOS or Windows is not supported out of the box because the setup relies on host networking, `/dev` passthrough and X11 sockets. On Windows, use WSL2 with Docker Engine inside the WSL distro (WSLg provides the display).
 
-- `/dev/ttyUSB0`
-- `/dev/ttyACM0`
+## What `run.sh` handles for you
 
-The container user is added to `dialout`.
+- **UID/GID:** the image is built with your host UID/GID, so files in `src/` and `.ros2_ws/` stay owned by you. If the image was built for a different UID, it is rebuilt automatically.
+- **Workspace dirs:** creates `../.ros2_ws/{build,install,log,history}` before Docker starts. Otherwise Docker creates them as root and colcon fails. Directories left root-owned by the old setup are fixed automatically.
+- **Display:** prefers X11/XWayland (`QT_QPA_PLATFORM=xcb`) because RViz2 and Gazebo are Qt5 apps and are most reliable there. It falls back to native Wayland and passes the Xauthority cookie when one exists.
+- **Device groups:** detects the host's serial group (`dialout` on Debian/Ubuntu, `uucp` on Arch/Fedora), plus `video`, `render` and `input`. Access to `/dev/ttyUSB*`, `/dev/ttyACM*`, cameras, DRI and input devices goes through `device_cgroup_rules`, so hot-plugging works without `privileged`.
+- **GPU:** adds `docker-compose.nvidia.yml` only when `nvidia-smi` works and Docker has the `nvidia` runtime.
+- **`.env`:** writes all of the above to `.env` (gitignored), so plain `docker compose up -d` and `docker compose exec ros2 bash` also work afterwards.
 
-If your device has another path, edit `docker-compose.yml`.
+## Networking (ROS 2 / DDS)
 
-## Camera
+The container uses host networking with CycloneDDS. On every start, the entrypoint writes `/tmp/cyclonedds.xml` bound to the host's current default-route interface (`wlan0`, `eth0`, `enp*` and so on) plus loopback. With no network at all, it falls back to localhost-only discovery. To force an interface, run `ROS_NETWORK_INTERFACE=eth0 ./run.sh`. To use your own config, set `CYCLONEDDS_URI`. Set `ROS_DOMAIN_ID=<n> ./run.sh` to isolate the robot on a shared LAN.
 
-`/dev/video0` is passed through and the container user is added to `video`.
+Gazebo Transport is pinned to `127.0.0.1` because Wi-Fi multicast stops the Gazebo GUI from finding its server.
 
-## Hyprland graphics
+## Layout
 
-Run `./run.sh` from a terminal in the Hyprland session. Gazebo's Qt build in
-this image has no Wayland platform plugin, so the container uses Hyprland's
-XWayland display. This is set inside the container and does not change Qt
-behavior for desktop applications. The compose file requests the host NVIDIA
-GPU through Docker's NVIDIA container runtime; `gpus: all` requires the NVIDIA
-Container Toolkit. Gazebo Transport is bound to loopback because Wi-Fi
-multicast discovery prevented the local GUI from finding its simulation
-server. ROS 2 continues to use host networking for communication with other
-devices; CycloneDDS is pinned to the host's active `wlan0` interface for local
-and LAN discovery. Host render nodes are also exposed for Mesa/DRI applications.
+| Path | Purpose |
+|---|---|
+| `Dockerfile` | Ubuntu 24.04 + ROS 2 Jazzy + Gazebo Harmonic (amd64/arm64) |
+| `packages.yml` | apt packages to install (one per line, `#` comments allowed) |
+| `entrypoint.sh` | Fixes workspace ownership and writes the DDS config, then runs the command |
+| `ros_bashrc.sh` | Shell environment: sources ROS and the workspace, Ubuntu-style colour prompt and `ls` colours, aliases `cb`, `cbr`, `sl`, `ll`, `la`, `nvrun`, history |
+| `docker-compose.yml` / `docker-compose.nvidia.yml` | Runtime config and GPU overlay |
+| `../src` → `~/ros2_ws/src` | Your packages (live-mounted) |
+| `../.ros2_ws/{build,install,log}` | colcon outputs, kept across container rebuilds |
+| `../.ros2_ws/history` | Persistent bash history |
 
-If NVIDIA GPU passthrough is unavailable, Gazebo may still launch using the
-host's DRI/Mesa path; CUDA workloads require NVIDIA passthrough.
+## Troubleshooting
 
-## ROS 2 workspace
-
-The host project's `../src` directory is mounted as:
-
-```text
-/home/omni_robot/ros2_ws/src
-```
-
-so source changes persist outside the container.
-
-Colcon's `build`, `install`, and `log` directories are stored in the host
-project's ignored `.ros2_ws` directory, so rebuilding the container preserves
-the compiled workspace.
-
-Build your workspace inside the container:
-
-```bash
-cd ~/ros2_ws
-colcon build --symlink-install
-source install/setup.bash
-```
-# Host portability
-
-The launcher is intended to work from Linux desktop sessions using X11,
-XWayland, or native Wayland, and does not require an NVIDIA GPU. It uses the
-host's DRI devices when available and otherwise allows Mesa software rendering.
-NVIDIA acceleration is enabled only when both `nvidia-smi` and Docker's NVIDIA
-runtime are available. For ROS 2 discovery it selects the host's default-route
-network interface each time it starts.
-
-The host still needs Docker Compose, a running desktop session, and compatible
-host graphics drivers. Native Wayland needs the Qt Wayland plugin in the image;
-X11/XWayland works through the mounted X socket. If display or GPU mounts change
-after a container was created, recreate that container for the new mounts.
+- **`permission denied` in build/ or install/:** run `./run.sh` again; it re-owns the directories. As a last resort, delete them with `sudo rm -rf ../.ros2_ws/{build,install,log}`.
+- **GUI does not open (`could not connect to display`):** start `./run.sh` from a terminal inside your desktop session. On X11 you can also run `xhost +local:`.
+- **Which GPU renders?** Check with `glxinfo -B`. Intel/AMD iGPUs and non-NVIDIA laptops use Mesa hardware acceleration through `/dev/dri` with no setup. On hybrid NVIDIA laptops the iGPU renders by default; prefix a command with `nvrun` (for example `nvrun ros2 launch mecanum_bot navigation.launch.py`) to use the dGPU. If you see a black window or glitches, use `LIBGL_ALWAYS_SOFTWARE=1 ./run.sh`.
+- **Serial device not visible:** check that it shows up on the host (`ls /dev/ttyUSB* /dev/ttyACM*`). Devices plugged in after the container started appear automatically.
+- **Raspberry Pi:** use a 64-bit OS. Gazebo and RViz are heavy on a Pi 4, so run the robot nodes there and visualise from a laptop on the same `ROS_DOMAIN_ID`.

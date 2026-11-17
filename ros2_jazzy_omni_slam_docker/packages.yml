@@ -63,7 +63,12 @@ ros-jazzy-gz-ros2-control-demos
 
 # Visualization
 ros-jazzy-rviz2
-qt6-wayland
+# Qt5 (RViz2 / Gazebo GUI) native-Wayland plugin; X11/XWayland is preferred
+qtwayland5
+# OpenGL (Mesa DRI for Intel/AMD, software fallback) + diagnostics
+libgl1-mesa-dri
+libglx-mesa0
+mesa-utils
 xterm
 
 # Middleware for reliable SBC <-> laptop / MCU ROS 2 communication
@@ -80,3 +85,8 @@ vim
 python3-pip
 python3-opencv
 python3-serial
+python3-argcomplete
+iproute2
+iputils-ping
+usbutils
+less

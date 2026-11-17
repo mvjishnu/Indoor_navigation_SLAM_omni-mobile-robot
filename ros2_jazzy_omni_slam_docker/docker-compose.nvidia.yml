@@ -1,6 +1,13 @@
+# Added automatically by run.sh when the NVIDIA Container Toolkit is present.
 services:
   ros2:
-    gpus: all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     environment:
       NVIDIA_VISIBLE_DEVICES: all
-      NVIDIA_DRIVER_CAPABILITIES: graphics,compute,utility,video
+      NVIDIA_DRIVER_CAPABILITIES: all

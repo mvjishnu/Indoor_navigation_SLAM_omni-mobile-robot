@@ -1,8 +1,8 @@
+# Use ./run.sh -- it writes .env (UID/GID, display, device groups) for this host
+# and then calls docker compose. After the first ./run.sh, plain
+# `docker compose up -d` / `docker compose exec ros2 bash` also work.
 services:
   ros2:
-    hostname: indoor_slam
-    extra_hosts:
-      - "indoor_slam:127.0.0.1"
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,66 +10,76 @@ services:
         USERNAME: ${CONTAINER_USER:-omni_robot}
         UID: ${HOST_UID:-1000}
         GID: ${HOST_GID:-1000}
-
     image: ros2-jazzy-omni-slam:latest
     container_name: ros2_jazzy_omni_slam
+    hostname: indoor_slam
+    extra_hosts:
+      - "indoor_slam:127.0.0.1"
 
+    init: true
     stdin_open: true
     tty: true
-
     network_mode: host
     ipc: host
-    privileged: false
+
     environment:
+      # Display: run.sh picks X11/XWayland (xcb) when available, else Wayland.
       DISPLAY: ${DISPLAY:-}
-      WAYLAND_DISPLAY: ${WAYLAND_DISPLAY_CONTAINER:-wayland-0}
-      QT_QPA_PLATFORM: "wayland;xcb"
-      XDG_RUNTIME_DIR: /run/user/${HOST_UID:-1000}
-      XAUTHORITY: /home/${CONTAINER_USER:-omni_robot}/.Xauthority
+      WAYLAND_DISPLAY: ${WAYLAND_DISPLAY_CONTAINER:-}
+      QT_QPA_PLATFORM: ${QT_QPA_PLATFORM:-xcb}
       QT_X11_NO_MITSHM: "1"
-      # Keep Gazebo Transport discovery local; host networking carries ROS 2.
+      XAUTHORITY: /tmp/.docker.xauth
+      XDG_RUNTIME_DIR: /run/user/${HOST_UID:-1000}
+      LIBGL_ALWAYS_SOFTWARE: ${LIBGL_ALWAYS_SOFTWARE:-0}
+      # Keep Gazebo Transport local (Wi-Fi multicast breaks GUI<->server discovery);
+      # ROS 2 itself still talks to the LAN through host networking.
       GZ_IP: 127.0.0.1
-      IGN_IP: 127.0.0.1
       GZ_PARTITION: indoor_slam
-      IGN_PARTITION: indoor_slam
+      GZ_VERSION: harmonic
       ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-      CYCLONEDDS_URI: file:///etc/ros/cyclonedds.xml
-      GZ_VERSION: harmonic
-      LIBGL_ALWAYS_SOFTWARE: ${LIBGL_ALWAYS_SOFTWARE:-0}
+      # Optional: force the DDS interface instead of auto-detecting it.
+      ROS_NETWORK_INTERFACE: ${ROS_NETWORK_INTERFACE:-}
 
     volumes:
+      # Source lives on the host; colcon outputs + history persist in ../.ros2_ws
       - ../src:/home/${CONTAINER_USER:-omni_robot}/ros2_ws/src
-      
-      # Persistent Bash history across container recreation
-      - ./docker-data/bash_history:/home/${CONTAINER_USER:-omni_robot}/.bash_history
-      - ../.ros2_ws/cyclonedds.xml:/etc/ros/cyclonedds.xml:ro
-
-      # Keep colcon outputs on the host across container recreation.
       - ../.ros2_ws/build:/home/${CONTAINER_USER:-omni_robot}/ros2_ws/build
       - ../.ros2_ws/install:/home/${CONTAINER_USER:-omni_robot}/ros2_ws/install
       - ../.ros2_ws/log:/home/${CONTAINER_USER:-omni_robot}/ros2_ws/log
+      - ../.ros2_ws/history:/home/${CONTAINER_USER:-omni_robot}/.history
 
-      # X11/XWayland, optional X authentication, and optional native Wayland.
+      # X11 / XWayland socket + optional auth cookie, optional native Wayland socket
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - ${XAUTHORITY_PATH:-/dev/null}:/home/${CONTAINER_USER:-omni_robot}/.Xauthority:ro
-      - ${WAYLAND_SOCKET_PATH:-/dev/null}:/run/user/${HOST_UID:-1000}/${WAYLAND_DISPLAY_CONTAINER:-wayland-0}:rw
+      - ${XAUTHORITY_PATH:-/dev/null}:/tmp/.docker.xauth:ro
+      - ${WAYLAND_SOCKET_PATH:-/dev/null}:/run/user/${HOST_UID:-1000}/wayland-0
 
-      # Live host device tree
+      # Hot-pluggable devices (serial MCU, LiDAR, camera, GPU render nodes)
       - /dev:/dev
-
-      # udev information
       - /run/udev:/run/udev:ro
 
-    # Qt requires XDG_RUNTIME_DIR to be owned by the container user with mode 0700.
+    # SELinux hosts (Fedora/RHEL): allow access to the bind mounts and X socket.
+    security_opt:
+      - label=disable
+
+    # Not privileged: allow only the device classes the robot needs.
+    device_cgroup_rules:
+      - "c 166:* rmw"   # ttyACM*  (Arduino/STM32/ESP32 CDC)
+      - "c 188:* rmw"   # ttyUSB*  (CP210x/CH340/FTDI, RPLiDAR)
+      - "c 189:* rmw"   # raw USB  (/dev/bus/usb)
+      - "c 81:* rmw"    # video*   (cameras)
+      - "c 226:* rmw"   # dri      (GPU render nodes)
+      - "c 13:* rmw"    # input    (joysticks)
+
+    # Host GIDs that own the device nodes (dialout/uucp, video, render, input)
+    group_add:
+      - "${SERIAL_GID:-20}"
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-44}"
+      - "${INPUT_GID:-44}"
+
+    # Qt requires XDG_RUNTIME_DIR to be owned by the user with mode 0700.
     tmpfs:
       - /run/user/${HOST_UID:-1000}:uid=${HOST_UID:-1000},gid=${HOST_GID:-1000},mode=0700
 
-    group_add:
-      - "${DIALOUT_GID:-20}"
-      - "${VIDEO_GID:-44}"
-
     working_dir: /home/${CONTAINER_USER:-omni_robot}/ros2_ws
-
-    command: bash
-    restart: unless-stopped

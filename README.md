@@ -1,6 +1,17 @@
 # Indoor_navigation_SLAM_omni-mobile-robot
 An autonomous ROS 2 Jazzy-based indoor omni-directional mobile robot featuring mecanum drive, LiDAR-based SLAM, sensor fusion, Nav2 autonomous navigation, and MCU-based motor and encoder control.
 
+## Development container
+
+Everything runs in a ROS 2 Jazzy + Gazebo Harmonic Docker container. On any Linux host with Docker:
+
+```bash
+cd ros2_jazzy_omni_slam_docker
+./run.sh        # builds on first run, then opens a shell in the container
+```
+
+See [ros2_jazzy_omni_slam_docker/docker.md](ros2_jazzy_omni_slam_docker/docker.md) for GPU, display, serial and networking details.
+
 ## Indoor simulation
 
 Build the ROS workspace in the Jazzy container, then start mapping and navigation:

@@ -1,180 +1,86 @@
+# ROS 2 Jazzy + Gazebo Harmonic development image (amd64 / arm64).
+#
+# Deliberately avoids BuildKit-only syntax (RUN heredocs, --mount, etc.) so it
+# builds with both the classic builder and BuildKit/buildx.
+
 FROM ubuntu:24.04
 
 ARG USERNAME=omni_robot
 ARG UID=1000
 ARG GID=1000
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG=en_US.UTF-8
-ENV LC_ALL=en_US.UTF-8
-ENV ROS_DISTRO=jazzy
-ENV GZ_VERSION=harmonic
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    ROS_DISTRO=jazzy \
+    GZ_VERSION=harmonic \
+    RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
-SHELL ["/bin/bash", "-c"]
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-
-# ============================================================
-# Base OS + ROS repository prerequisites
-# ============================================================
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    locales \
-    ca-certificates \
-    curl \
-    gnupg2 \
-    lsb-release \
-    software-properties-common \
-    && locale-gen en_US en_US.UTF-8 \
+# ------------------------------------------------------------
+# Base OS + ROS apt repository
+# ------------------------------------------------------------
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        locales ca-certificates curl gnupg2 lsb-release software-properties-common sudo \
+    && add-apt-repository -y universe \
+    && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
+    && curl -fsSL --retry 5 https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+        -o /usr/share/keyrings/ros-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo "$UBUNTU_CODENAME") main" \
+        > /etc/apt/sources.list.d/ros2.list \
     && rm -rf /var/lib/apt/lists/*
 
+# Gazebo Harmonic comes from the ROS repo (ros-jazzy-gz-*-vendor packages,
+# pulled in by ros-jazzy-ros-gz), so no separate OSRF repository is needed.
 
-# ============================================================
-# ROS 2 Jazzy repository
-# ============================================================
-
-RUN curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
-      -o /usr/share/keyrings/ros-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu noble main" \
-      > /etc/apt/sources.list.d/ros2.list
-
-
-# ============================================================
-# Gazebo Harmonic repository
-# ============================================================
-
-RUN curl -fsSL https://packages.osrfoundation.org/gazebo.gpg \
-      -o /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable noble main" \
-      > /etc/apt/sources.list.d/gazebo-stable.list
-
-
-# ============================================================
-# Install ROS 2 / Gazebo / robotics packages
-# ============================================================
-
+# ------------------------------------------------------------
+# ROS 2 / Gazebo / robotics packages (see packages.yml)
+# ------------------------------------------------------------
 COPY packages.yml /tmp/packages.yml
-
 RUN apt-get update \
-    && grep -Ev '^[[:space:]]*($|#)' /tmp/packages.yml \
+    && grep -Ev '^[[:space:]]*($|#)' /tmp/packages.yml | sed 's/[[:space:]]*#.*//' \
        | xargs apt-get install -y --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/* /tmp/packages.yml
+    && rm -rf /var/lib/apt/lists/* /tmp/packages.yml \
+    && (rosdep init || true)
 
-
-# ============================================================
-# Non-root development user
-# ============================================================
-
+# ------------------------------------------------------------
+# Non-root user matching the host UID/GID (so bind-mounted files stay yours)
+# ------------------------------------------------------------
+# ubuntu:24.04 ships an "ubuntu" user/group on 1000:1000 -- drop it first.
 RUN set -eux; \
-    if getent passwd "${UID}" >/dev/null; then \
-        EXISTING_USER="$(getent passwd "${UID}" | cut -d: -f1)"; \
-        echo "UID ${UID} already belongs to ${EXISTING_USER}"; \
-        \
-        if [ "${EXISTING_USER}" != "${USERNAME}" ]; then \
-            EXISTING_HOME="$(getent passwd "${EXISTING_USER}" | cut -d: -f6)"; \
-            usermod -l "${USERNAME}" "${EXISTING_USER}"; \
-            usermod -d "/home/${USERNAME}" -m "${USERNAME}"; \
-            \
-            EXISTING_GROUP="$(getent group "${GID}" | cut -d: -f1)"; \
-            if [ -n "${EXISTING_GROUP}" ] && [ "${EXISTING_GROUP}" != "${USERNAME}" ]; then \
-                groupmod -n "${USERNAME}" "${EXISTING_GROUP}"; \
-            fi; \
-        fi; \
+    if id ubuntu >/dev/null 2>&1; then userdel -r ubuntu 2>/dev/null || userdel ubuntu; fi; \
+    if getent group ubuntu >/dev/null; then groupdel ubuntu; fi; \
+    if [ "${UID}" = "0" ]; then echo "Refusing to build with UID 0; build.sh maps root to 1000" >&2; exit 1; fi; \
+    if getent passwd "${UID}" >/dev/null; then userdel -r "$(getent passwd "${UID}" | cut -d: -f1)" || true; fi; \
+    if getent group "${GID}" >/dev/null; then \
+        GROUP_NAME="$(getent group "${GID}" | cut -d: -f1)"; \
     else \
-        if getent group "${GID}" >/dev/null; then \
-            GROUP_NAME="$(getent group "${GID}" | cut -d: -f1)"; \
-        else \
-            groupadd --gid "${GID}" "${USERNAME}"; \
-            GROUP_NAME="${USERNAME}"; \
-        fi; \
-        \
-        useradd \
-            --uid "${UID}" \
-            --gid "${GROUP_NAME}" \
-            --create-home \
-            --shell /bin/bash \
-            "${USERNAME}"; \
+        groupadd --gid "${GID}" "${USERNAME}"; GROUP_NAME="${USERNAME}"; \
     fi; \
-    usermod -aG dialout,video,sudo "${USERNAME}"; \
+    useradd --uid "${UID}" --gid "${GROUP_NAME}" --create-home --shell /bin/bash \
+            --groups dialout,video,plugdev,sudo "${USERNAME}" 2>/dev/null \
+      || useradd --uid "${UID}" --gid "${GROUP_NAME}" --create-home --shell /bin/bash \
+            --groups dialout,video,sudo "${USERNAME}"; \
     echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${USERNAME}"; \
-    chmod 0440 "/etc/sudoers.d/${USERNAME}"
+    chmod 0440 "/etc/sudoers.d/${USERNAME}"; \
+    mkdir -p "/home/${USERNAME}/ros2_ws/src" "/home/${USERNAME}/.history"; \
+    chown -R "${UID}:${GID}" "/home/${USERNAME}"
 
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY ros_bashrc.sh /etc/profile.d/zz-ros.sh
+RUN chmod 0755 /usr/local/bin/entrypoint.sh \
+    && chmod 0644 /etc/profile.d/zz-ros.sh \
+    && for rc in /root/.bashrc "/home/${USERNAME}/.bashrc"; do \
+         echo '[ -f /etc/profile.d/zz-ros.sh ] && . /etc/profile.d/zz-ros.sh' >> "$rc"; done \
+    && chown "${UID}:${GID}" "/home/${USERNAME}/.bashrc"
 
-# ============================================================
-# ROS environment + terminal configuration
-# ============================================================
-
-RUN cat >> /home/${USERNAME}/.bashrc <<'EOF'
-
-# ============================================================
-# Omni Robot Terminal
-# ============================================================
-
-export TERM=xterm-256color
-
-# ROS 2 Jazzy
-source /opt/ros/jazzy/setup.bash
-
-# Project workspace
-source /home/${USERNAME}/ros2_ws/install/setup.bash 2>/dev/null || true
-
-# Gazebo
-export GZ_VERSION=harmonic
-
-# ROS 2 middleware
-export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-
-# Persistent Bash history
-export HISTFILE="$HOME/.bash_history"
-export HISTSIZE=100000
-export HISTFILESIZE=200000
-shopt -s histappend
-PROMPT_COMMAND="history -a; history -n${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
-
-# ROS 2 workspace shortcuts
-alias cb='cd ~/ros2_ws && colcon build --symlink-install && source ~/ros2_ws/install/setup.bash'
-alias cbr='cd ~/ros2_ws && rm -rf build install log'
-alias sl='ros2 launch mecanum_bot bot.launch.py'
-
-
-# ============================================================
-# Colored file listing
-# ============================================================
-
-export LS_COLORS='di=34:ex=32:ln=36:mi=01;31:*.tar=31:*.gz=31:*.zip=31:*.deb=31:*.rpm=31:*.yaml=33:*.yml=33:*.xml=33:*.json=33:*.py=33:*.cpp=33:*.hpp=33:*.h=33:*.sh=32'
-
-alias ls='ls --color=auto'
-alias ll='ls -alF --color=auto'
-alias la='ls -A --color=auto'
-alias l='ls -CF --color=auto'
-
-
-# ============================================================
-# Green user@hostname + blue path
-# ============================================================
-
-PS1='\[\e[32m\]\u@\h\[\e[0m\]:\[\e[34m\]\w\[\e[0m\]\$ '
-
-# ============================================================
-
-EOF
-
-
-# Make sure the user's home belongs to the non-root user
-RUN chown -R ${UID}:${GID} /home/${USERNAME}
-
-
-# ============================================================
-# Switch to non-root user
-# ============================================================
+LABEL omni.uid="${UID}" omni.gid="${GID}"
 
 USER ${USERNAME}
-
 WORKDIR /home/${USERNAME}/ros2_ws
 
-
-# ============================================================
-# Start Bash
-# ============================================================
-
-CMD ["bash"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["sleep", "infinity"]

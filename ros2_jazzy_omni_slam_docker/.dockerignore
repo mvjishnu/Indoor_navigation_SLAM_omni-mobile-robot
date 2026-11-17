@@ -1,5 +1,4 @@
-workspace/build
-workspace/install
-workspace/log
-.git
-.gitignore
+*
+!packages.yml
+!entrypoint.sh
+!ros_bashrc.sh
