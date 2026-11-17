@@ -108,15 +108,56 @@ def _sensor_xml():
 """
 
 
+ROLLER_JOINT_RE = re.compile(
+    r'<joint\s+name="([^"]*roller[^"]*)"\s+type="continuous"')
+
+# Gazebo topic carrying the passive roller joint states (bridged to /joint_states).
+ROLLER_STATE_TOPIC = 'roller_joint_states'
+
+
+def roller_joint_names(urdf_text):
+    """Names of the free-spinning mecanum roller joints in the URDF."""
+    return ROLLER_JOINT_RE.findall(urdf_text)
+
+
+def _roller_state_xml(joints):
+    """
+    Gazebo JointStatePublisher for the passive rollers.
+
+    ros2_control only reports the four driven wheel joints, so without this
+    robot_state_publisher never gets roller joint states, the roller frames
+    never appear in TF, and RViz cannot draw the rollers.
+    """
+    names = ''.join(f'\n      <joint_name>{j}</joint_name>' for j in joints)
+    return f"""
+  <!-- ===== roller joint states for RViz (added by mecanum_bot.robot_description) ===== -->
+  <gazebo>
+    <plugin filename="gz-sim-joint-state-publisher-system"
+            name="gz::sim::systems::JointStatePublisher">
+      <topic>{ROLLER_STATE_TOPIC}</topic>{names}
+    </plugin>
+  </gazebo>
+"""
+
+
 def build_robot_description(urdf_text, controllers_yaml=None, sim=True):
     """
     Return the URDF string with the navigation additions applied.
 
     ``controllers_yaml`` replaces the ros2_control parameter file that the
     original URDF hard-codes (simulation only).
+
+    On real hardware nothing measures the passive rollers, so their joints are
+    turned into fixed joints; robot_state_publisher then publishes them as
+    static frames and RViz still draws them.
     """
     extra = NAV_FRAMES_XML
+    rollers = roller_joint_names(urdf_text)
+    if not sim:
+        urdf_text = ROLLER_JOINT_RE.sub(
+            lambda m: m.group(0).replace('continuous', 'fixed'), urdf_text)
     if sim:
+        extra += _roller_state_xml(rollers)
         if controllers_yaml is not None:
             urdf_text, count = re.subn(
                 r'<parameters>[^<]*</parameters>',

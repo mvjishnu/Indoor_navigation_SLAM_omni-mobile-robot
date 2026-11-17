@@ -47,7 +47,10 @@ def generate_launch_description():
         executable='parameter_bridge',
         arguments=[
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+            # Passive roller joints -> /joint_states so rollers appear in TF/RViz.
+            '/roller_joint_states@sensor_msgs/msg/JointState[gz.msgs.Model',
         ],
+        remappings=[('/roller_joint_states', '/joint_states')],
         output='screen',
     )
 

@@ -73,8 +73,11 @@ def generate_launch_description():
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
             '/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
             '/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
+            # Passive roller joints (wheel joints come from joint_state_broadcaster).
+            '/roller_joint_states@sensor_msgs/msg/JointState[gz.msgs.Model',
         ],
-        remappings=[('/imu', '/imu/data')],
+        remappings=[('/imu', '/imu/data'),
+                    ('/roller_joint_states', '/joint_states')],
         output='screen',
     )
 

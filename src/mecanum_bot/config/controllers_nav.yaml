@@ -23,9 +23,15 @@ mecanum_drive_controller:
       wheels_radius: 0.042
       sum_of_robot_center_projection_on_X_Y_axis: 0.20
 
-    base_frame_id: "base_link"
+    # The wheel kinematics are expressed in the driving frame (x = forward),
+    # which is base_footprint. The CAD base_link is rotated -90 deg (y forward);
+    # labelling the odometry "base_link" made the EKF rotate every velocity by
+    # 90 deg, so SLAM had to correct the pose by 10-20 cm on each scan (jitter).
+    base_frame_id: "base_footprint"
     odom_frame_id: "odom"
-    enable_odom_tf: true
+    # The EKF (ekf.yaml, publish_tf: true) owns odom -> base_footprint.
+    # Publishing odom -> base_link here too would give base_link two parents.
+    enable_odom_tf: false
 
     reference_timeout: 0.5
 
