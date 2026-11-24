@@ -75,7 +75,6 @@ sudo systemctl restart docker
 cd ~
 git clone https://github.com/mvjishnu/Indoor_navigation_SLAM_omni-mobile-robot.git
 cd Indoor_navigation_SLAM_omni-mobile-robot
-git checkout slam-branch
 ```
 
 ## 4. Build and start the container
